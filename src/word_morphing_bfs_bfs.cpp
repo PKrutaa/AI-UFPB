@@ -9,7 +9,11 @@
 #include <iostream>
 #include <unordered_set> // para armazenar o dicionário
 #include <string>
-
+#include <vector>
+#include <deque>
+#include <unordered_map>
+#include <algorithm>
+#include <cctype>
 using namespace std;
 
 unordered_set<string> carregarDicionario(const string& filename) {
@@ -75,7 +79,7 @@ struct Estado {
     int profundidade;
 };
 
-vector<string> reconstruirCaminho(const string* palavra_inicial, const string* palavra_final, const unordered_map<string, string>& pai) {
+vector<string> reconstruirCaminho(const string& palavra_inicial, const string& palavra_final, const unordered_map<string, string>& pai) {
 
     /**
      * @brief Reconstrói o caminho entre duas palavras.
@@ -101,24 +105,79 @@ vector<string> reconstruirCaminho(const string* palavra_inicial, const string* p
 
 
 vector<string> buscaHibrida( const string& palavra_inicial, const string& palavra_final, const unordered_set<string>& dicionario, int k) {
-    return;
+
+    /**
+     * @brief Realiza a busca híbrida entre duas palavras.
+     * @param palavra_inicial A palavra inicial.
+     * @param palavra_final A palavra final.
+     * @param dicionario O dicionário de palavras.
+     * @param k O limite de profundidade da busca em profundidade.
+     * @return Um vetor de strings contendo o caminho entre as duas palavras.
+     */
+
+    // Casos base
+
+    if (dicionario.find(palavra_inicial) == dicionario.end() || dicionario.find(palavra_final) == dicionario.end()) { // Verifica se palavra inicial e final estão no dicionario
+        cerr << "Palavra inicial ou final não encontrada no dicionário" << endl;
+        return {};
+    }
+
+    if (palavra_inicial == palavra_final) { // Verifica se palavra inicial e final são iguais
+        return {palavra_inicial};
+    }
+
+    // Estruturas de dados
+
+    deque<Estado> fronteira;
+    unordered_set<string> visitados;
+    unordered_map<string, string> pai;
+
+    // Inicialização da busca
+
+    Estado estado_inicial = {palavra_inicial, 0};
+    fronteira.push_back(estado_inicial);
+    visitados.insert(palavra_inicial);
+
+    // Loop principal da busca
+
+    while (!fronteira.empty()) {
+        Estado atual = fronteira.front(); // Pega o estado atual da fronteira
+        fronteira.pop_front(); // Remove o estado para a busca
+
+        if (atual.palavra == palavra_final) {
+            return reconstruirCaminho(palavra_inicial, palavra_final, pai); // Reconstrói o caminho se encontrar a palavra final
+        }
+
+        vector<string> vizinhos = gerarVizinhos(atual.palavra, dicionario); // Gera os vizinhos da palavra atual
+
+        for (const string& vizinho : vizinhos){ // Percorre todos os vizinhos da palavra atual
+            if (visitados.find(vizinho) == visitados.end()) { // Verifica se o vizinho não foi visitado
+                visitados.insert(vizinho); // Marca o vizinho como visitado
+                pai[vizinho] = atual.palavra; // Marca o pai do vizinho como a palavra atual
+
+                Estado novo_estado = {vizinho, atual.profundidade + 1}; // Cria um novo estado com a palavra vizinha e a profundidade + 1
+
+                if (atual.profundidade < k) {
+                    fronteira.push_back(novo_estado); // Adiciona na fronteira como último elemento para a busca em largura
+                }
+                else {
+                    fronteira.push_front(novo_estado); // Adiciona na fronteira como primeiro elemento para a busca em profundidade
+                }
+            }
+        }
+    }
+
+    return {}; // Retorna um vetor vazio se não encontrar o caminho
 }
 
 int main() {
     auto dicionario = carregarDicionario("dicionario.txt");
-
     cout << "Carregadas " << dicionario.size() << " palavras.\n";
 
-    vector<string> vizinhos = gerarVizinhos("GATO", dicionario);
-
-    cout << "Vizinhos de GATO: ";
-    for (const string& vizinho : vizinhos) {
-        cout << vizinho << " ";
+    vector<string> caminho = buscaHibrida("GATO", "VELA", dicionario, 0);
+    cout << "Caminho: ";
+    for (const string& palavra : caminho) {
+        cout << palavra << " ";
     }
     cout << endl;
-
-    // testar:
-    if (dicionario.find("GATO") != dicionario.end()) {
-        cout << "Achei GATO no dicionario!\n";
-    }
 }
