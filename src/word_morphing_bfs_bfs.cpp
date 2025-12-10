@@ -69,12 +69,48 @@ vector<string> gerarVizinhos(const string& palavra, const unordered_set<string>&
     return vizinhos; // Retorna o vetor de vizinhos
 }
 
+// Estrutura para armazenar o estado atual da busca
+struct Estado {
+    string palavra;
+    int profundidade;
+};
+
+vector<string> reconstruirCaminho(const string* palavra_inicial, const string* palavra_final, const unordered_map<string, string>& pai) {
+
+    /**
+     * @brief Reconstrói o caminho entre duas palavras.
+     * @param palavra_inicial A palavra inicial.
+     * @param palavra_final A palavra final.
+     * @param pai O mapa de pais.
+     * @return Um vetor de strings contendo o caminho entre as duas palavras.
+     */
+
+    vector<string> caminho;
+    string atual = palavra_final; // Inicializa a palavra atual com a palavra final
+
+    while (true) {
+        caminho.push_back(atual); // Adiciona a palavra atual ao caminho
+        auto it = pai.find(atual); // Encontra o pai da palavra atual
+        if (it == pai.end()) break;
+        atual = it->second; // Atualiza a palavra atual com o pai da palavra atual
+    }
+
+    reverse(caminho.begin(), caminho.end()); // Inverte o caminho
+    return caminho;
+}
+
+
+vector<string> buscaHibrida( const string& palavra_inicial, const string& palavra_final, const unordered_set<string>& dicionario, int k) {
+    return;
+}
+
 int main() {
     auto dicionario = carregarDicionario("dicionario.txt");
 
     cout << "Carregadas " << dicionario.size() << " palavras.\n";
 
     vector<string> vizinhos = gerarVizinhos("GATO", dicionario);
+
     cout << "Vizinhos de GATO: ";
     for (const string& vizinho : vizinhos) {
         cout << vizinho << " ";
