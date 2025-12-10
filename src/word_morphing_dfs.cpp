@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include <queue>
+#include <stack>
 #include <algorithm>
 
 using namespace std;
@@ -27,41 +27,41 @@ string get_string(int x){
     return s;
 }
 
-void bfs(string source, string target) {
+void dfs(string source, string target) {
+    if (source == target) return;
+
     for (int i = 0; i <= n; i++) {
         parent[i] = i;
         dist[i] = -1; 
     }
 
     string v = source;
-    queue<string> q;
-    q.push(v);
+    stack<string> s;
+    s.push(v);
     dist[get_index(v)] = 0;
     parent[get_index(v)] = get_index(v);
 
-    if (source == target) return;
+    while (!s.empty()) {
+        v = s.top();
+        s.pop();
 
-    while (!q.empty()) {
-        v = q.front();
-        q.pop();
-      
         for (int i = 0; i < 4; i++) {
             for (char c = 'A'; c <= 'Z'; c++) {
-                if (c == v[i]) continue;
-                
-                string u = v; 
+                if (c == source[i]) continue;
+        
+                string u = v;
                 u[i] = c;     
-                
+
                 if (dist[get_index(u)] == -1) {
                     cnt_neighborhood++;
                     dist[get_index(u)] = dist[get_index(v)] + 1;
-                    q.push(u);
+                    s.push(u);
                     parent[get_index(u)] = get_index(v);
-                    if (u == target) return; 
+                    if (u == target) return;
                 }
             }
         }
-    }
+    }   
 }
 
 int main() {
@@ -71,7 +71,7 @@ int main() {
     string source, target;
     cin >> source >> target;
 
-    bfs(source, target);
+    dfs(source, target);
 
     vector<string> path;
     string curr = target;
