@@ -16,6 +16,31 @@
 #include <cctype>
 using namespace std;
 
+// Estrutura para armazenar o estado atual da busca
+struct Estado {
+    string palavra;
+    int profundidade;
+};
+
+// Cabeçalho de função
+unordered_set<string> carregarDicionario(const string& filename);
+vector<string> gerarVizinhos(const string& palavra, const unordered_set<string>& dicionario);
+vector<string> reconstruirCaminho(const string& palavra_inicial, const string& palavra_final, const unordered_map<string, string>& pai);
+vector<string> buscaHibrida(const string& palavra_inicial, const string& palavra_final, const unordered_set<string>& dicionario, int k);
+
+int main() {
+    auto dicionario = carregarDicionario("dicionario.txt");
+    cout << "Carregadas " << dicionario.size() << " palavras.\n";
+
+    vector<string> caminho = buscaHibrida("GATO", "VELA", dicionario, 0);
+    cout << "Caminho: ";
+    for (const string& palavra : caminho) {
+        cout << palavra << " ";
+    }
+    cout << endl;
+}
+
+// Implementação das outras funções
 unordered_set<string> carregarDicionario(const string& filename) {
 
     /**
@@ -73,12 +98,6 @@ vector<string> gerarVizinhos(const string& palavra, const unordered_set<string>&
     return vizinhos; // Retorna o vetor de vizinhos
 }
 
-// Estrutura para armazenar o estado atual da busca
-struct Estado {
-    string palavra;
-    int profundidade;
-};
-
 vector<string> reconstruirCaminho(const string& palavra_inicial, const string& palavra_final, const unordered_map<string, string>& pai) {
 
     /**
@@ -102,7 +121,6 @@ vector<string> reconstruirCaminho(const string& palavra_inicial, const string& p
     reverse(caminho.begin(), caminho.end()); // Inverte o caminho
     return caminho;
 }
-
 
 vector<string> buscaHibrida( const string& palavra_inicial, const string& palavra_final, const unordered_set<string>& dicionario, int k) {
 
@@ -168,16 +186,4 @@ vector<string> buscaHibrida( const string& palavra_inicial, const string& palavr
     }
 
     return {}; // Retorna um vetor vazio se não encontrar o caminho
-}
-
-int main() {
-    auto dicionario = carregarDicionario("dicionario.txt");
-    cout << "Carregadas " << dicionario.size() << " palavras.\n";
-
-    vector<string> caminho = buscaHibrida("GATO", "VELA", dicionario, 0);
-    cout << "Caminho: ";
-    for (const string& palavra : caminho) {
-        cout << palavra << " ";
-    }
-    cout << endl;
 }
