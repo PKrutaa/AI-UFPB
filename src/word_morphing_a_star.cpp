@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include <stack>
+#include <queue>
 #include <algorithm>
 #include <chrono>
 
@@ -9,8 +9,16 @@ using namespace std;
 int n = 456976; // 26^4
 
 int cnt_neighborhood = 1;
-vector<int> parent; 
-vector<int> dist; 
+vector<int> parent;
+vector<int> dist;
+
+int hamming_distance(const string &a, const string &b) {
+    int dist = 0;
+    for (int i = 0; i < 4; i++) {
+        if (a[i] != b[i]) dist++;
+    }
+    return dist;
+}
 
 int get_index(string s){
     return (s[0]-'A')*26*26*26 +
@@ -28,41 +36,41 @@ string get_string(int x){
     return s;
 }
 
-void dfs(string source, string target) {
-    if (source == target) return;
-
+void bfs(string source, string target) {
     for (int i = 0; i <= n; i++) {
         parent[i] = i;
-        dist[i] = -1; 
+        dist[i] = -1;
     }
 
     string v = source;
-    stack<string> s;
-    s.push(v);
+    priority_queue<pair<int, string>, vector<pair<int, string>>, greater<pair<int, string>>> q;
+    q.push({hamming_distance(v, target), v});
     dist[get_index(v)] = 0;
     parent[get_index(v)] = get_index(v);
 
-    while (!s.empty()) {
-        v = s.top();
-        s.pop();
+    if (source == target) return;
+
+    while (!q.empty()) {
+        v = q.top().second;
+        q.pop();
 
         for (int i = 0; i < 4; i++) {
             for (char c = 'A'; c <= 'Z'; c++) {
-                if (c == source[i]) continue;
-        
+                if (c == v[i]) continue;
+
                 string u = v;
-                u[i] = c;     
+                u[i] = c;
 
                 if (dist[get_index(u)] == -1) {
                     cnt_neighborhood++;
                     dist[get_index(u)] = dist[get_index(v)] + 1;
-                    s.push(u);
+                    q.push({dist[get_index(u)] + hamming_distance(u, target), u});
                     parent[get_index(u)] = get_index(v);
                     if (u == target) return;
                 }
             }
         }
-    }   
+    }
 }
 
 int main() {
@@ -73,7 +81,7 @@ int main() {
     cin >> source >> target;
 
     auto start = chrono::high_resolution_clock::now();
-    dfs(source, target);
+    bfs(source, target);
     auto end = chrono::high_resolution_clock::now();
     double elapsed_ms = chrono::duration<double, milli>(end - start).count();
 
@@ -91,6 +99,7 @@ int main() {
     cout << "Total nodes processed: " << cnt_neighborhood << endl;
     cout << "Number of transformations: " << dist[get_index(target)] << endl;
     cout << "Time (ms): " << elapsed_ms << endl;
+
     for (int i = 0; i < path.size(); i++) {
         cout << path[i] << (i == path.size() - 1 ? "\n" : " -> ");
     }
