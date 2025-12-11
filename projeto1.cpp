@@ -4,6 +4,7 @@
 #include <fstream>
 #include <map>
 #include <stack>
+#include <list>
 
 using namespace std;
 
@@ -96,13 +97,41 @@ void find_adj_mat(){
   }
 }
 
+void print_adj(string palavra){
+  cout << "Palavra: " << palavra << " -> Adjacentes: [";
+
+  for(int j = 0; j < adj_mat[palavra].size(); j++){
+      cout << adj_mat[palavra][j] << ((j == adj_mat[palavra].size() - 1) ? ("") : (", "));
+  }
+
+  cout << "]\n";
+}
+
+void print_path(const vector<int>& parent, const string& begin, const string& end){
+  int aux = dicionario[end];
+
+  list<string> path;
+
+  while(parent[aux] != -1){
+    path.push_front(lista[aux]);
+    aux = parent[aux];
+  }
+
+  path.push_front(begin);
+
+  cout << "Caminho de " << begin << " até " << end << " (size: " << path.size() << "): ";
+  for(auto it = path.begin(); it != path.end(); ++it){
+    cout << *it << ((next(it) == path.end()) ? ("") : (" -> "));
+  }cout << endl;
+}
+
 void print_tree(const vector<string>& tree){
     if(tree.empty()){
         cout << "Nenhuma árvore encontrada\n";
         return;
     }
 
-    cout << "Árvore: [";
+    cout << "Árvore (size: " << tree.size() << "): [";
 
     for(int j = 0; j < tree.size(); j++){
         cout << tree[j] << ((j == tree.size() - 1) ? ("") : (", "));
@@ -115,7 +144,7 @@ vector<string> DFS(map<string, vector<string>>& adj_matrix, const string& begin,
     int n = adj_matrix.size();
 
     vector<int> status(n, 0); //represents the status of each vertex
-    vector<int> parent(n, -1); //initializates the vector of parents as an invalid parent
+    vector<int> parent(n, -1); // initializes the parent of each vertex
 
     stack<string> s; //stack aux
 
@@ -131,12 +160,14 @@ vector<string> DFS(map<string, vector<string>>& adj_matrix, const string& begin,
 
     bool flag = 0; //flag para indicar se foi achado um novo no ou nao
 
-    //while(there_is_adj_not_visited(s.top(), adj_matrix, status)){
     while(!s.empty()){
         for(auto vertex : adj_matrix[s.top()]){
             if(status[dicionario[vertex]] == 0){
                 //updates the status of the vertex
                 status[dicionario[vertex]] = 1;
+
+                parent[dicionario[vertex]] = dicionario[s.top()]; // set the parent of the vertex
+                
                 //put the vertex on the stack
                 s.push(vertex);
                 tree.push_back(s.top()); //adds the new vertex on the tree
@@ -160,51 +191,7 @@ vector<string> DFS(map<string, vector<string>>& adj_matrix, const string& begin,
         s.pop();
     }
 
-    /*for(int i = 0; i < n; i++){
-        if(status[i] == 0){
-            vector<int> tree;
-
-            tree.push_back(i);
-
-            int index_aux = i;
-
-            status[index_aux] = 1; //just the start vertex is 1
-
-            //put the vertex on the stack
-            s.push(index_aux);
-            //cout << s.top() << " ";
-
-            bool flag = 0; //flag para indicar se foi achado um novo no ou nao
-
-            //while(there_is_adj_not_visited(s.top(), adj_matrix, status)){
-            while(!s.empty()){
-                for(auto edge : adj_matrix[s.top()]){
-                    if(status[edge.first] == 0){
-                        //updates the status of the vertex
-                        status[edge.first] = 1;
-                        //put the vertex on the stack
-                        s.push(edge.first);
-                        tree.push_back(s.top()); //adds the new vertex on the tree
-                        //cout << s.top() << " ";
-
-                        //search in the adj
-                        flag = 1;
-                        break;
-                    }
-                }
-
-                if(flag){
-                    flag = 0;
-                    continue;
-                }
-
-                s.pop();
-            }
-
-            forest.push_back(tree);
-        }
-    }*/
-
+    print_path(parent, begin, end); // print the path from begin to end
     return tree;
 }
 
@@ -223,9 +210,11 @@ int main(int argc, char** argv){
   // fazer a matriz de adjacência de cada palavra para as outras que diferem apenas uma letra
   find_adj_mat();
 
-  auto tree = DFS(adj_mat, "PATA", "RICO"); // coloca a palavra de inicio da busca e a que quer chegar
+  auto tree = DFS(adj_mat, "PICO", "BALA"); // coloca a palavra de inicio da busca e a que quer chegar
 
   print_tree(tree);
+
+  // print_adj("NATO");
 
   return 0;
 }
